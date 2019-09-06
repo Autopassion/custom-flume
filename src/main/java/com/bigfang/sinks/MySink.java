@@ -23,23 +23,23 @@ public class MySink extends AbstractSink implements Configurable {
             // This try clause includes whatever Channel operations you want to do
 
             Event event = ch.take();
-            logger.info(event.getBody()+prefix);
+            if(event != null){
+                logger.info(event.getBody()+prefix);
+            }
             // Send the Event to the external repository.
             // storeSomeData(e);
-
             txn.commit();
             status = Status.READY;
         } catch (Throwable t) {
             txn.rollback();
-
             // Log exception, handle individual exceptions as needed
-
             status = Status.BACKOFF;
-
             // re-throw all Errors
             if (t instanceof Error) {
                 throw (Error)t;
             }
+        }finally {
+            txn.close();
         }
         return status;
     }
